@@ -1,4 +1,5 @@
 from Sql.Connect import stockConnect
+from datetime import datetime
 
 
 class KLine:
@@ -11,7 +12,15 @@ class KLine:
     low = 0.0
     open = 0.0
     close = 0.0
+    cost = 0.0
+    price = 0.0
 
+    def get_date(self):
+        return datetime(self.year,self.month,self.day)
+
+    def get_date_str(self):
+        dt = self.get_date()
+        return dt.strftime("%Y-%m-%d")
 
 class KLineTable:
 
@@ -34,10 +43,10 @@ class KLineTable:
         conn.commit()
 
     @staticmethod
-    def select_k_line_list(code_id, table_id):
+    def select_k_line_list(code_id, table_id, start_date=datetime(1800,1,1), end_date=datetime.now()):
         k_line_list = []
         conn = stockConnect.get_connect()
-        sql = KLineTable.gen_select_sql(code_id, table_id)
+        sql = KLineTable.gen_select_sql(code_id, table_id, start_date,end_date)
         cursor = conn.execute(sql)
         for row in cursor:
             k_line = KLine()
@@ -50,17 +59,26 @@ class KLineTable:
             k_line.high = row[6]
             k_line.low = row[7]
             k_line.takeover = row[8]
+            k_line.cost = row[9]
+            k_line.price = row[10]
             k_line_list.append(k_line)
 
         return k_line_list
 
     @staticmethod
-    def gen_select_sql(code_id, table_id):
-        sql = ('select codeId, year, month, day, open, close, high, low, takeover from '
+    def gen_select_sql(code_id, table_id, start_date, end_date):
+        sql = ('select codeId, year, month, day, open, close, high, low, takeover, cost ,price from '
                + KLineTable.get_table_name(table_id)
                + ' where '
                + "codeId = " + code_id
-               + ";")
+               + ' and year >= ' + str(start_date.year)
+               + ' and month >= ' + str(start_date.month)
+               + ' and day >= ' + str(start_date.day)
+               + ' and year <= ' + str(end_date.year)
+               + ' and month <= ' + str(end_date.month)
+               + ' and day <= ' + str(end_date.day)
+               + " order by id;")
+
         return sql
 
     @staticmethod
@@ -80,7 +98,7 @@ class KLineTable:
     def gen_insert_sql(k_line_item, table_id):
         sql = ('insert into '
                + KLineTable.get_table_name(table_id)
-               + ' (codeId, year, month, day, open, close, high, low, takeover)values('
+               + ' (codeId, year, month, day, open, close, high, low, takeover,cost,price)values('
                + k_line_item.codeId + ", "
                + str(k_line_item.year) + ", "
                + str(k_line_item.month) + ", "
@@ -89,7 +107,9 @@ class KLineTable:
                + str(k_line_item.close) + ", "
                + str(k_line_item.high) + ", "
                + str(k_line_item.low) + ", "
-               + str(k_line_item.takeover) + ") "
+               + str(k_line_item.takeover) + ", "
+               + str(k_line_item.cost) + ", "
+               + str(k_line_item.price) + ");"
                )
 
         return sql

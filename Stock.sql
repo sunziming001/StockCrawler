@@ -42,7 +42,9 @@ CREATE table if not exists DayKLineTable(
 	close real NOT NULL,
 	high real NOT NULL,
 	low real NOT NULL,
-	takeover real NOT NULL
+	takeover real NOT NULL,
+	cost real NOT NULL,
+	price real NOT NULL
 );
 
 CREATE table if not exists WeekKLineTable(
@@ -55,7 +57,9 @@ CREATE table if not exists WeekKLineTable(
 	close real NOT NULL,
 	high real NOT NULL,
 	low real NOT NULL,
-	takeover real NOT NULL
+	takeover real NOT NULL,
+	cost real NOT NULL,
+	price real NOT NULL
 );
 
 CREATE table if not exists MonthKLineTable(
@@ -68,7 +72,9 @@ CREATE table if not exists MonthKLineTable(
 	close real NOT NULL,
 	high real NOT NULL,
 	low real NOT NULL,
-	takeover real NOT NULL
+	takeover real NOT NULL,
+	cost real NOT NULL,
+	price real NOT NULL
 );
 
 

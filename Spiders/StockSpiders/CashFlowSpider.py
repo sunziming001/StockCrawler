@@ -1,9 +1,12 @@
 # coding=utf-8
-
+import sys
+import os
 import scrapy
 import json
+
 from Sql.StockBriefTable import StockBriefTable
 from Sql.CashFlowRecdTable import CashFlowRecdTable, CashFlowRecd
+
 
 
 class CashFlowSpider(scrapy.Spider):

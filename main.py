@@ -9,14 +9,9 @@ from Sql.KLineTable import KLineTable
 from Analizer.StockAnalyzer import StockAnalyzer
 from Analizer.KLineAnalyzer import KLineAnalyzer
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+os.environ['PYTHONPATH'] = os.environ['PATH'] + BASE_DIR + ";"
 
-# StockAnalizer.get_top_profit_rate_stock(50)
-# os.system("scrapy runspider Spiders/StockSpiders/StockProfitSpider.py --nolog")
-# os.system("scrapy runspider Spiders/StockSpiders/CashFlowSpider.py --nolog")
-
-# StockAnalizer.get_top_net_present_value_stock(50)
-
-# val = StockAnalizer.get_net_present_value_average('002067')
 
 def help_print():
     print('get top chinese stock which has high net present value ')
@@ -46,7 +41,7 @@ def init_database():
 def init_day_k_line():
     print('start init day k line...')
     KLineTable.clear_k_line_table(0)
-    os.system("scrapy runspider Spiders/StockSpiders/DayKLineSpider.py --nolog")
+    os.system("scrapy runspider Spiders/StockSpiders/DayKLineSpider.py  --nolog")
     print('\ninit finished')
 
 
@@ -70,6 +65,18 @@ def analyzer_day_cost_all():
     analyzer = KLineAnalyzer()
     analyzer.analyze_all(0)
 
+
+def analyzer_day_cost_profit():
+    scode_list = StockBriefTable.get_stock_id_list()
+    analyzer = KLineAnalyzer()
+    arr = [0,0,0,1.0]
+    for code_id in scode_list:
+        new_arr = analyzer.analyze_profit(code_id,0,arr[0],arr[1],arr[2],arr[3])
+        if new_arr[1] != arr[1]:
+            arr = new_arr
+            print("WinRate: "+ str(arr[0]*1.0/arr[1])+ " Growth: "+ str(arr[3]))
+
+
 if __name__ == "__main__":
     opts, args = getopt.getopt(sys.argv[1:], 'h', ['help',
                                                    'init',
@@ -78,7 +85,8 @@ if __name__ == "__main__":
                                                    'initdl',
                                                    'initwl',
                                                    'adcost=',
-                                                   'adcostall'])
+                                                   'adcostall',
+                                                   'adcostprofit'])
     season = 4
     for key, value in opts:
         if key in ['--season']:
@@ -102,3 +110,5 @@ if __name__ == "__main__":
             analyzer_day_cost_all()
         elif key in ['--adcost']:
             analyzer_day_cost(value)
+        elif key in ["--adcostprofit"]:
+            analyzer_day_cost_profit()

@@ -9,7 +9,6 @@ from Sql.KLineTable import KLine, KLineTable
 
 
 class KLineSpider(scrapy.Spider):
-
     name = 'KLineSpider'
     cur_scode_indx = 0
     scode_list = StockBriefTable.get_stock_id_list()
@@ -37,19 +36,54 @@ class KLineSpider(scrapy.Spider):
                + '_=1591876244555')
         return url
 
-
     def get_cur_scode(self):
         return self.scode_list[self.cur_scode_indx]
 
     def start_requests(self):
         yield self.request_k_line(self.get_cur_scode())
 
+    def get_new_cost_info(self, last_cost_info, cur_price, take_over):
+        cost_info = last_cost_info
+
+        if cost_info is None:
+            cost_info = {cur_price: take_over}
+        else:
+            cnt = len(cost_info)
+            minus_take_over = take_over / cnt
+            for price in list(cost_info.keys()):
+                cost_info[price] -= minus_take_over
+                if cost_info[price] <= 0:
+                    del cost_info[price]
+
+            if cost_info.get(cur_price) is None:
+                cost_info[cur_price] = take_over
+            else:
+                cost_info[cur_price] += take_over
+
+        return cost_info
+
+    def get_cost_from_cost_info(self, cost_info):
+        cur_average_cost_sum = 0.0
+        cur_average_cost_factor = 0.0
+        cur_average_cost = 0.0
+        for key in cost_info.keys():
+            cur_average_cost_sum += key * cost_info[key]
+            cur_average_cost_factor += cost_info[key]
+
+        if cur_average_cost_factor != 0:
+            cur_average_cost = cur_average_cost_sum / cur_average_cost_factor
+        else:
+            cur_average_cost = cost_info[key]
+
+        return cur_average_cost
+
     def parse_k_line(self, response):
         str_body = response.body.decode("utf-8", "ignore")
-        head_len = len(self.get_jquery_str())+1
+        head_len = len(self.get_jquery_str()) + 1
         str_json = str_body[head_len:-2]
         json_data = json.loads(str_json)
-        k_line_data =  None
+        k_line_data = None
+        last_cost_info = None
         table_id = self.get_k_line_table_id()
         if json_data["data"] is not None:
             k_line_data = json_data["data"]["klines"]
@@ -58,21 +92,26 @@ class KLineSpider(scrapy.Spider):
 
         if k_line_data is not None:
             for line in k_line_data:
-                mkl = KLine()
+                k_line_item = KLine()
 
                 arr = line.split(',')
                 dt = datetime.strptime(arr[0], '%Y-%m-%d')
 
-                mkl.codeId = json_data["data"]["code"]
-                mkl.year = dt.year
-                mkl.month = dt.month
-                mkl.day = dt.day
-                mkl.open = arr[1]
-                mkl.close = arr[2]
-                mkl.high = arr[3]
-                mkl.low = arr[4]
-                mkl.takeover = arr[8]
-                k_line_list.append(mkl)
+                k_line_item.codeId = json_data["data"]["code"]
+                k_line_item.year = dt.year
+                k_line_item.month = dt.month
+                k_line_item.day = dt.day
+                k_line_item.open = arr[1]
+                k_line_item.close = arr[2]
+                k_line_item.high = arr[3]
+                k_line_item.low = arr[4]
+                k_line_item.takeover = arr[8]
+                k_line_item.price = (float(k_line_item.open) + float(k_line_item.close) + float(k_line_item.high) + float(k_line_item.low)) / 4.0
+
+                last_cost_info = self.get_new_cost_info(last_cost_info, float(k_line_item.price), float(k_line_item.takeover))
+                k_line_item.cost = self.get_cost_from_cost_info(last_cost_info)
+
+                k_line_list.append(k_line_item)
 
             KLineTable.insert_k_line_list(k_line_list, table_id)
 
