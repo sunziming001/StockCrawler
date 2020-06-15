@@ -69,12 +69,12 @@ def analyzer_day_cost_all():
 def analyzer_day_cost_profit():
     scode_list = StockBriefTable.get_stock_id_list()
     analyzer = KLineAnalyzer()
-    arr = [0,0,0,1.0]
+    arr = [0, 0, 0, 1.0]
     for code_id in scode_list:
-        new_arr = analyzer.analyze_profit(code_id,0,arr[0],arr[1],arr[2],arr[3])
+        new_arr = analyzer.analyze_profit(code_id, 0, arr[0], arr[1], arr[2], arr[3])
         if new_arr[1] != arr[1]:
             arr = new_arr
-            print("WinRate: "+ str(arr[0]*1.0/arr[1])+ " Growth: "+ str(arr[3]))
+            print("WinRate: " + str(arr[0] * 1.0 / arr[1]) + " Growth: " + str(arr[3]) + " day: " + str(arr[2]))
 
 
 if __name__ == "__main__":
