@@ -21,14 +21,21 @@ class KLineBuyRecdTable:
 
     @staticmethod
     def select_holding_code():
-        code_id_list = []
+        recd_list = []
         conn = stockConnect.get_connect()
-        str_sql = 'select codeId from KLineBuyRecdTable where sellDate is \'None\''
+        str_sql = 'select codeId,buyDate,sellDate,buyPrice,sellPrice,takeDays from KLineBuyRecdTable where sellDate ' \
+                  'is \'None\' '
         cursor = conn.execute(str_sql)
         for row in cursor:
-            code_id = row[0]
-            code_id_list.append(code_id)
-        return code_id_list
+            recd = KLineBuyRecd()
+            recd.code_id = row[0]
+            recd.buy_date = row[1]
+            recd.sell_date = row[2]
+            recd.buy_price = row[3]
+            recd.sell_price = row[4]
+            recd.days = row[5]
+            recd_list.append(recd)
+        return recd_list
 
     @staticmethod
     def select_holding_buy_recd_list_by_code_id(code_id):

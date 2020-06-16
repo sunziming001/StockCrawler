@@ -129,10 +129,11 @@ def analyzer_day_cost_profit():
 
 
 def get_adv():
-    code_id_list = KLineBuyRecdTable.select_holding_code()
-    for code_id in code_id_list:
+    recd_list = KLineBuyRecdTable.select_holding_code()
+    for recd in recd_list:
+        code_id = recd.code_id
         buy_recd_list = KLineBuyRecdTable.select_holding_buy_recd_list_by_code_id(code_id)
-        print(code_id)
+        print(code_id + ": " + str(recd.buy_price))
         cnt = len(buy_recd_list)
         win_cnt = 0
         max_during = 0
@@ -151,6 +152,12 @@ def get_adv():
         win_rate = win_cnt / cnt
         print("win_rate: " + str(win_rate) + " aver_dur: " + str(aver_during) + " max_dur:" + str(max_during))
         print(" ")
+
+
+def daily_run():
+    init_day_k_line()
+    analyzer_day_cost_profit()
+    get_adv()
 
 
 def reg_test():
@@ -173,6 +180,7 @@ if __name__ == "__main__":
                                                    'adcostprofit',
                                                    'aholding',
                                                    'getadv',
+                                                   'dailyrun',
                                                    'regtest'])
     season = 4
     for key, value in opts:
@@ -203,5 +211,7 @@ if __name__ == "__main__":
             analyzer_holding_info()
         elif key in ["--getadv"]:
             get_adv()
+        elif key in ["--dailyrun"]:
+            daily_run()
         elif key in ["--regtest"]:
             reg_test()

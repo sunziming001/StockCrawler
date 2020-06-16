@@ -64,7 +64,7 @@ class KLineAnalyzer:
         if cur_ma_short <= 0.0 or prev_ma_short <= 0.0 or self.is_date_sep_wrong(prev_k_line, cur_k_line):
             return False
         if cur_k_line.close < 0.5 * cur_ma_long \
-                and prev_k_line.takeover + cur_k_line.takeover >= 1.0:
+                and prev_k_line.takeover + cur_k_line.takeover >= 50:
             return True
         else:
             return False
