@@ -77,6 +77,15 @@ CREATE table if not exists MonthKLineTable(
 	price real NOT NULL
 );
 
+CREATE table if not exists KLineBuyRecdTable(
+	id integer primary key AUTOINCREMENT,
+	codeId TEXT NOT NULL,
+	buyDate TEXT NOT NULL,
+	sellDate TEXT NOT NULL,
+	buyPrice real NOT NULL,
+	sellPrice real NOT NULL,
+	takeDays real NOT NULL
+);
 
 
 Insert into CashFlowRecdType(recdTypeID,desc)values(0,"经营活动产生的现金流量净额");

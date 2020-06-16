@@ -1,5 +1,6 @@
 from Sql.KLineTable import KLineTable, KLine
 from Sql.StockBriefTable import StockBriefTable
+from Sql.KLineBuyRecdTable import KLineBuyRecd
 from datetime import datetime
 import pandas as pd
 from pandas import DataFrame
@@ -25,7 +26,7 @@ class KLineAnalyzer:
         ma_200_arr = []
         close_arr = []
         k_line_cnt = len(k_line_list)
-        for indx in range(0,k_line_cnt):
+        for indx in range(0, k_line_cnt):
             k_line = k_line_list[indx]
             ma_20 = self.get_ma_close(indx, k_line_list, 20)
             ma_200 = self.get_ma_close(indx, k_line_list, 200)
@@ -38,31 +39,32 @@ class KLineAnalyzer:
             ma_200_arr.append(ma_200)
             close_arr.append(k_line.close)
 
-
         cost_line_data_fame = DataFrame({
             'DatetimeIndex': date_arr,
             'average_price': average_price_arr,
             'average_cost': average_cost_arr,
             'close': close_arr,
-            'ma_20':ma_20_arr,
-            'ma_200':ma_200_arr
+            'ma_20': ma_20_arr,
+            'ma_200': ma_200_arr
         })
 
         plt.plot('DatetimeIndex', 'close', data=cost_line_data_fame)
-        #plt.plot('DatetimeIndex', 'average_cost', data=cost_line_data_fame)
+        # plt.plot('DatetimeIndex', 'average_cost', data=cost_line_data_fame)
         plt.plot('DatetimeIndex', 'ma_20', data=cost_line_data_fame)
-        plt.plot('DatetimeIndex', 'ma_200', data=cost_line_data_fame)
+        # plt.plot('DatetimeIndex', 'ma_200', data=cost_line_data_fame)
         plt.legend()
         plt.show()
 
     def is_match(self, prev_k_line, cur_k_line, indx, k_line_list):
+        cur_ma_long = self.get_ma_close(indx, k_line_list, 100)
+        prev_ma_long = self.get_ma_close(indx - 1, k_line_list, 100)
 
-        cur_ma_20 = self.get_ma_close(indx, k_line_list, 20)
-        prev_ma_20 = self.get_ma_close(indx - 1, k_line_list, 20)
-        if cur_ma_20 <= 0.0 or prev_ma_20 <= 0.0 or self.is_date_sep_wrong(prev_k_line,cur_k_line):
+        cur_ma_short = self.get_ma_close(indx, k_line_list, 5)
+        prev_ma_short = self.get_ma_close(indx - 1, k_line_list, 5)
+        if cur_ma_short <= 0.0 or prev_ma_short <= 0.0 or self.is_date_sep_wrong(prev_k_line, cur_k_line):
             return False
-        if cur_k_line.close < 0.5*cur_ma_20 \
-                and cur_k_line.takeover+prev_k_line.takeover >= 0.8:
+        if cur_k_line.close < 0.5 * cur_ma_long \
+                and prev_k_line.takeover + cur_k_line.takeover >= 1.0:
             return True
         else:
             return False
@@ -82,8 +84,18 @@ class KLineAnalyzer:
 
             self.print_progress()
             self.cur_scode_indx += 1
-            if len(k_line_list) >= 2 and self.is_match(k_line_list[-2], k_line_list[-1],-1,k_line_list):
+            if len(k_line_list) >= 2 and self.is_match(k_line_list[-2], k_line_list[-1], -1, k_line_list):
                 print("\n" + code_id + " is Match")
+
+    def get_ma_cost(self, indx, k_line_list, ma):
+        sum = 0.0
+        if indx + 1 < ma:
+            return 0
+        else:
+            for i in range(0, ma):
+                k_line = k_line_list[indx - i]
+                sum += k_line.cost
+        return sum / ma
 
     def get_ma_close(self, indx, k_line_list, ma):
         sum = 0.0
@@ -95,24 +107,25 @@ class KLineAnalyzer:
                 sum += k_line.close
         return sum / ma
 
-    def analyze_profit(self, code_id, table_id=0, win_cnt=0, total_cnt=0, day_cnt=0, growth=0):
+    def analyze_profit(self, code_id, table_id=0):
         k_line_list = KLineTable.select_k_line_list(code_id, table_id)
+        buy_recd_list = []
+        win_cnt = 0
+        total_cnt = 0
+        day_cnt = 0
+        growth = 0
         prev_k_line = None
         is_during_check = False
-        keep_trace_day = 0
         total_raise_rate = 0.0
         total_des_rate = 0.0
         start_check_k_line = None
-        win_exp_rate = 0.8
-        lose_exp_rate = -0.3
-
+        win_exp_rate = 0.1
+        lose_exp_rate = -0.1
         for cur_idx in range(0, len(k_line_list)):
             k_line = k_line_list[cur_idx]
             cur_ma = self.get_ma_close(cur_idx, k_line_list, 200)
 
-            if k_line.year <= 2017:
-                continue
-            if k_line.year == 2000 and k_line.month == 6 and k_line.day == 1 and k_line.codeId=='1':
+            if k_line.year == 2000 and k_line.month == 6 and k_line.day == 1 and k_line.codeId == '1':
                 print("11")
 
             if prev_k_line is None:
@@ -128,36 +141,53 @@ class KLineAnalyzer:
                     total_des_rate = (k_line.low - start_check_k_line.open) / start_check_k_line.open
 
                     if win_exp_rate >= total_raise_rate \
-                            and total_des_rate >= lose_exp_rate:# keep check
-                        keep_trace_day += 1
+                            and total_des_rate >= lose_exp_rate:  # keep check
+                        pass
                     else:
                         is_during_check = False
                         output_rate = 0.0
 
-                        total_cnt += 1
-                        day_cnt += keep_trace_day
                         if total_raise_rate >= win_exp_rate:
-                            win_cnt += 1
                             growth = growth * (1.0 + win_exp_rate)
                             output_rate = win_exp_rate
                         else:
                             growth = growth * (1.0 + lose_exp_rate)
                             output_rate = lose_exp_rate
+
+                        cur_buy_recd = KLineBuyRecd()
+                        cur_buy_recd.code_id = k_line.codeId
+                        cur_buy_recd.buy_date = start_check_k_line.get_date_str()
+                        cur_buy_recd.sell_date = k_line.get_date_str()
+                        cur_buy_recd.buy_price = start_check_k_line.open
+                        cur_buy_recd.sell_price = cur_buy_recd.buy_price * (1 + output_rate)
+                        cur_buy_recd.days = (k_line.get_date() - start_check_k_line.get_date()).days
+
+                        buy_recd_list.append(cur_buy_recd)
                         print(code_id + " " + start_check_k_line.get_date_str() + "~" + k_line.get_date_str() + ": "
-                              + str(keep_trace_day) + ", " + str(output_rate))
+                              + str(output_rate) + " day: " + str(cur_buy_recd.days))
                 else:
                     is_during_check = False
+
             elif self.is_match(prev_k_line, k_line, cur_idx, k_line_list):
                 is_during_check = True
-                keep_trace_day = 0
                 total_raise_rate = 0.0
                 total_des_rate = 0.0
                 start_check_k_line = None
-                match_dur_cnt = 0
 
             prev_k_line = k_line
 
-        return [win_cnt, total_cnt, day_cnt, growth]
+        if is_during_check and start_check_k_line is not None:
+            print("has checking stock " + k_line.codeId)
+            cur_buy_recd = KLineBuyRecd()
+            cur_buy_recd.code_id = k_line.codeId
+            cur_buy_recd.buy_date = start_check_k_line.get_date_str()
+            cur_buy_recd.buy_price = start_check_k_line.open
+            cur_buy_recd.days = 0
+            cur_buy_recd.sell_date = 'None'
+            cur_buy_recd.sell_price = 0.0
+            buy_recd_list.append(cur_buy_recd)
+
+        return buy_recd_list
 
     def print_progress(self):
         str_progress = "{0}/{1}".format(str(self.cur_scode_indx),

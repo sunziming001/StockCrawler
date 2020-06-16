@@ -16,11 +16,12 @@ class KLine:
     price = 0.0
 
     def get_date(self):
-        return datetime(self.year,self.month,self.day)
+        return datetime(self.year, self.month, self.day)
 
     def get_date_str(self):
         dt = self.get_date()
         return dt.strftime("%Y-%m-%d")
+
 
 class KLineTable:
 
@@ -43,10 +44,10 @@ class KLineTable:
         conn.commit()
 
     @staticmethod
-    def select_k_line_list(code_id, table_id, start_date=datetime(1800,1,1), end_date=datetime.now()):
+    def select_k_line_list(code_id, table_id, start_date=datetime(1800, 1, 1), end_date=datetime.now()):
         k_line_list = []
         conn = stockConnect.get_connect()
-        sql = KLineTable.gen_select_sql(code_id, table_id, start_date,end_date)
+        sql = KLineTable.gen_select_sql(code_id, table_id, start_date, end_date)
         cursor = conn.execute(sql)
         for row in cursor:
             k_line = KLine()
@@ -88,10 +89,7 @@ class KLineTable:
         for i in range(0, list_len):
             k_line_item = k_line_list[i]
             sql = KLineTable.gen_insert_sql(k_line_item, table_id)
-            try:
-                conn.execute(sql)
-            except Exception:
-                pass
+            conn.execute(sql)
         conn.commit()
 
     @staticmethod
