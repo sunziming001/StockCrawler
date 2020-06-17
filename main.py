@@ -75,12 +75,14 @@ def analyzer_holding_info():
     dt = datetime(1991, 4, 1)
     # dt = datetime(2020, 3, 18)
     max_price = 0.0
+    min_win_rate = 2.0
+    max_hold_cnt = 0
     while dt < datetime.now() + timedelta(days=2):
         buy_recd_list = KLineBuyRecdTable.select_holding_buy_recd_list_by_date(dt)
         total_price = 0.0
         average_price = 0.0
         win_cnt = 0
-        recd_cnt = len(buy_recd_list)
+        recd_cnt = 0
 
         for buy_recd in buy_recd_list:
             total_price += buy_recd.buy_price
@@ -88,16 +90,23 @@ def analyzer_holding_info():
                 win_cnt += 1
             if buy_recd.sell_price == 0.0:
                 recd_cnt -= 1
+            recd_cnt += 1
 
         if recd_cnt > 0:
             average_price = total_price / recd_cnt
             if max_price < total_price:
                 max_price = total_price
+            if min_win_rate > win_cnt * 1.0 / len(buy_recd_list):
+                min_win_rate = win_cnt * 1.0 / len(buy_recd_list)
+            if max_hold_cnt < len(buy_recd_list):
+                max_hold_cnt = len(buy_recd_list)
             print(dt.strftime("%Y-%m-%d: ") + str(total_price) + " " + str(
-                win_cnt * 1.0 / len(buy_recd_list)) + " " + str(len(buy_recd_list)))
+                win_cnt * 1.0 / recd_cnt) + " " + str(recd_cnt))
         dt = dt + timedelta(days=1)
 
     print("max price: " + str(max_price))
+    print("max hold cnt: " + str(max_hold_cnt))
+    print("min win rate: " + str(min_win_rate))
 
 
 def analyzer_day_cost_profit():
@@ -111,6 +120,9 @@ def analyzer_day_cost_profit():
     KLineBuyRecdTable.clear_table()
     for index in range(0, code_cnt):
         code_id = scode_list[index]
+        int_code = int(code_id)
+        if int_code < 300000:
+            continue
         buy_record_list = analyzer.analyze_profit(code_id)
         for buy_record in buy_record_list:
             if buy_record.sell_date == 'None':
@@ -125,39 +137,39 @@ def analyzer_day_cost_profit():
         KLineBuyRecdTable.insert_buy_recd_list(buy_record_list)
         if len(buy_record_list) > 0 and total_cnt > 0:
             print("[" + str(index) + "] WinRate: " + str(win_cnt * 1.0 / total_cnt) + " Growth: " + str(
-                growth / take_days) + " days: " + str(take_days / total_cnt))
+                pow(growth, 1 / take_days)) + " days: " + str(take_days / total_cnt))
+
+
+def get_buy_recd_win_rate(buy_recd_list):
+    total_cnt = len(buy_recd_list) - 1
+    win_cnt = 0
+    if total_cnt <= 0:
+        return 0.5
+    else:
+        for buy_recd in buy_recd_list:
+            if buy_recd.sell_price > buy_recd.buy_price:
+                win_cnt += 1
+    return win_cnt/total_cnt
 
 
 def get_adv():
     recd_list = KLineBuyRecdTable.select_holding_code()
+    analyzer = KLineAnalyzer()
+    buy_recds = []
     for recd in recd_list:
         code_id = recd.code_id
-        buy_recd_list = KLineBuyRecdTable.select_holding_buy_recd_list_by_code_id(code_id)
-        print(code_id + ": " + str(recd.buy_price))
-        cnt = len(buy_recd_list)
-        win_cnt = 0
-        max_during = 0
-        total_days = 0
-        aver_during = 0
+        if int(code_id) >= 2000:
+            continue
+        if analyzer.analyze_is_stock_match(code_id):
+            buy_recd_list = analyzer.analyze_profit(code_id)
+            buy_recds.append(buy_recd_list)
 
-        for buy_recd in buy_recd_list:
-            if buy_recd.sell_price > buy_recd.buy_price:
-                win_cnt += 1
-            if max_during <= buy_recd.days:
-                max_during = buy_recd.days
-            total_days += buy_recd.days
-            # print("\tdate: " + buy_recd.buy_date + " during: " + str(buy_recd.days) + " growth: " + str((
-            #           buy_recd.sell_price - buy_recd.buy_price) / buy_recd.buy_price))
-        aver_during = total_days / cnt
-        win_rate = win_cnt / cnt
-        print("win_rate: " + str(win_rate) + " aver_dur: " + str(aver_during) + " max_dur:" + str(max_during))
-        print(" ")
+    buy_recds.sort(key=get_buy_recd_win_rate,reverse=True)
 
 
 def daily_run():
     init_day_k_line()
     analyzer_day_cost_profit()
-    get_adv()
 
 
 def reg_test():
