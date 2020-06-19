@@ -126,7 +126,7 @@ def analyzer_day_cost_profit():
     growth = 1.0
     take_days = 0
     KLineBuyRecdTable.clear_table()
-    for index in range(0, code_cnt):
+    for index in range(90, code_cnt):
         code_id = scode_list[index]
         int_code = int(code_id)
         buy_record_list = analyzer.analyze_profit(code_id, 0)

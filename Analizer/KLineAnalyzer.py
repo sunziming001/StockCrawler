@@ -85,7 +85,7 @@ class KLineAnalyzer:
             start_date = k_line.get_date()
             end_date = start_date + timedelta(weeks=4)
             if start_date <= date <= end_date:
-                return self.is_cross(idx,k_line_list)
+                return k_line.takeover > 180
         return False
 
     def is_match(self, indx, k_line_list, upper_k_line_list):
@@ -97,9 +97,8 @@ class KLineAnalyzer:
         cur_k_line = k_line_list[indx]
         pre_k_line = k_line_list[indx - 1]
         if self.is_cross(indx, k_line_list) \
-                and k_line_list[indx].diff <= -1 \
-                and k_line_list[indx].takeover >= 8: # \
-                #and not self.is_in_up_trend(k_line_list[indx].get_date(), upper_k_line_list):
+                and k_line_list[indx].diff <= -1.2:
+
             return True
         else:
             return False
@@ -171,7 +170,7 @@ class KLineAnalyzer:
         k_line_list = KLineTable.select_k_line_list(code_id, table_id)
         k_line_list.sort(key=get_k_line_date)
 
-        uper_k_line_list = KLineTable.select_k_line_list(code_id, table_id +2)
+        uper_k_line_list = KLineTable.select_k_line_list(code_id, table_id + 2)
         uper_k_line_list.sort(key=get_k_line_date)
 
         buy_recd_list = []
@@ -191,7 +190,7 @@ class KLineAnalyzer:
         for cur_idx in range(0, len(k_line_list)):
             k_line = k_line_list[cur_idx]
 
-            #002458 2018-02-28~2018-03-01: -0.1 day: 1
+            # 002458 2018-02-28~2018-03-01: -0.1 day: 1
             if k_line.codeId == '2458' and k_line.year == 2018 and k_line.month == 2 and k_line.day == 28:
                 print("11")
 
