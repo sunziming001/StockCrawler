@@ -1,4 +1,6 @@
 from Sql.Connect import stockConnect
+from datetime import datetime
+from datetime import timedelta
 
 
 class ProfitRecd:
@@ -32,6 +34,41 @@ class ProfitRecdTable:
             item.recd_type_id = row[4]
             profit_recd_list.append(item)
         return profit_recd_list
+
+
+    @staticmethod
+    def select_stock_recd(code_id):
+        profit_recd_list = []
+        conn = stockConnect.get_connect()
+        str_sql = ProfitRecdTable.gen_select_stock_is_profitable(code_id)
+        cursor = conn.execute(str_sql)
+        for row in cursor:
+            item = ProfitRecd()
+            item.codeId = row[0]
+            item.year = row[1]
+            item.season = row[2]
+            item.value = row[3]
+            item.recd_type_id = row[4]
+            profit_recd_list.append(item)
+        return profit_recd_list
+
+    @staticmethod
+    def gen_select_stock_is_profitable(code_id):
+        #cur_date = date - timedelta(days=180)
+        #cur_season = 1
+        #if cur_date.month <= 3:
+        #    cur_season = 1
+        #elif cur_date.month <= 6:
+        #    cur_season = 2
+        #elif cur_date.month <= 9:
+        #    cur_season = 3
+        #else:
+        #    cur_season = 4
+        int_code = int(code_id)
+        str_sql = ("select codeId, year, season, value, recdTypeId from ProfitRecd where "
+                   + "codeId = " + '\''+str(int_code)+'\''
+                   + " and recdTypeId == 5")
+        return str_sql
 
     @staticmethod
     def gen_select_sql(profit_recd):

@@ -29,16 +29,16 @@ def help_print():
 def init_database():
     print('start init database...')
     print('init stock brief...')
-    StockBriefTable.clear_brief_table()
-    StockBriefTable.init_stock_brief_from_xl('./data/A_stock_list.xlsx')
+    #StockBriefTable.clear_brief_table()
+    #StockBriefTable.init_stock_brief_from_xl('./data/A_stock_list.xlsx')
 
     # print('\nusing spiders to get stock cash flow table...')
     # CashFlowRecdTable.clear_cash_flow_recd_table()
     # os.system("scrapy runspider Spiders/StockSpiders/CashFlowSpider.py --nolog")
 
-    # print('\nusing spiders to get stock profit table...')
-    # ProfitRecdTable.clear_profit_recd_table()
-    # os.system("scrapy runspider Spiders/StockSpiders/StockProfitSpider.py --nolog")
+    print('\nusing spiders to get stock profit table...')
+    ProfitRecdTable.clear_profit_recd_table()
+    os.system("scrapy runspider Spiders/StockSpiders/StockProfitSpider.py")
 
     print('\ninit finished')
 
@@ -55,6 +55,14 @@ def init_week_k_line():
     KLineTable.clear_k_line_table(1)
     os.system("scrapy runspider Spiders/StockSpiders/WeekKLineSpider.py --nolog")
     print('\ninit finished')
+
+
+def init_month_k_line():
+    print('start init month k line...')
+    KLineTable.clear_k_line_table(2)
+    os.system("scrapy runspider Spiders/StockSpiders/MonthKLineSpider.py ")
+    print('\ninit finished')
+
 
 
 def print_top_net_present_value_stock(top_cnt, season):
@@ -121,9 +129,7 @@ def analyzer_day_cost_profit():
     for index in range(0, code_cnt):
         code_id = scode_list[index]
         int_code = int(code_id)
-        if int_code < 300000:
-            continue
-        buy_record_list = analyzer.analyze_profit(code_id)
+        buy_record_list = analyzer.analyze_profit(code_id, 0)
         for buy_record in buy_record_list:
             if buy_record.sell_date == 'None':
                 continue
@@ -169,7 +175,7 @@ def get_adv():
 
 def daily_run():
     init_day_k_line()
-    analyzer_day_cost_profit()
+    #analyzer_day_cost_profit()
 
 
 def reg_test():
@@ -187,6 +193,7 @@ if __name__ == "__main__":
                                                    'season=',
                                                    'initdl',
                                                    'initwl',
+                                                   'initml',
                                                    'adcost=',
                                                    'adcostall',
                                                    'adcostprofit',
@@ -211,6 +218,8 @@ if __name__ == "__main__":
             init_day_k_line()
         elif key in ['--initwl']:
             init_week_k_line()
+        elif key in ['--initml']:
+            init_month_k_line()
         elif key in ['--anpv']:
             print_top_net_present_value_stock(int(value), season)
         elif key in ['--adcostall']:

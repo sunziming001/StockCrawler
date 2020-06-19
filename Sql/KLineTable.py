@@ -72,12 +72,6 @@ class KLineTable:
                + KLineTable.get_table_name(table_id)
                + ' where '
                + "codeId = " + code_id
-               + ' and year >= ' + str(start_date.year)
-               + ' and month >= ' + str(start_date.month)
-               + ' and day >= ' + str(start_date.day)
-               + ' and year <= ' + str(end_date.year)
-               + ' and month <= ' + str(end_date.month)
-               + ' and day <= ' + str(end_date.day)
                + " order by id;")
 
         return sql

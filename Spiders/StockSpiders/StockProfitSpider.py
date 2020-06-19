@@ -53,7 +53,11 @@ class StockProfitSpider(scrapy.Spider):
 
     # ""
     def parse_profit(self, response):
-        data = json.loads(response.body)
+        data = []
+        try:
+            data = json.loads(response.body)
+        except Exception:
+            pass
         data_len = len(data)
         season = self.cur_rtype
         profit_recd_list = []
