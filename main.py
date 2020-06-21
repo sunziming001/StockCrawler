@@ -29,12 +29,12 @@ def help_print():
 def init_database():
     print('start init database...')
     print('init stock brief...')
-    #StockBriefTable.clear_brief_table()
-    #StockBriefTable.init_stock_brief_from_xl('./data/A_stock_list.xlsx')
+    StockBriefTable.clear_brief_table()
+    StockBriefTable.init_stock_brief_from_xl('./data/A_stock_list.xlsx')
 
-    # print('\nusing spiders to get stock cash flow table...')
-    # CashFlowRecdTable.clear_cash_flow_recd_table()
-    # os.system("scrapy runspider Spiders/StockSpiders/CashFlowSpider.py --nolog")
+    print('\nusing spiders to get stock cash flow table...')
+    CashFlowRecdTable.clear_cash_flow_recd_table()
+    os.system("scrapy runspider Spiders/StockSpiders/CashFlowSpider.py --nolog")
 
     print('\nusing spiders to get stock profit table...')
     ProfitRecdTable.clear_profit_recd_table()
@@ -126,7 +126,7 @@ def analyzer_day_cost_profit():
     growth = 1.0
     take_days = 0
     KLineBuyRecdTable.clear_table()
-    for index in range(90, code_cnt):
+    for index in range(0, code_cnt):
         code_id = scode_list[index]
         int_code = int(code_id)
         buy_record_list = analyzer.analyze_profit(code_id, 0)
@@ -164,18 +164,17 @@ def get_adv():
     buy_recds = []
     for recd in recd_list:
         code_id = recd.code_id
-        if int(code_id) >= 2000:
-            continue
-        if analyzer.analyze_is_stock_match(code_id):
-            buy_recd_list = analyzer.analyze_profit(code_id)
-            buy_recds.append(buy_recd_list)
 
-    buy_recds.sort(key=get_buy_recd_win_rate,reverse=True)
+        analyzer.analyze_profit(code_id)
+
+
 
 
 def daily_run():
     init_day_k_line()
-    #analyzer_day_cost_profit()
+    analyzer_day_cost_profit()
+    print("===================================")
+    get_adv()
 
 
 def reg_test():

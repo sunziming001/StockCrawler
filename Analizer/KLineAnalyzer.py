@@ -9,6 +9,7 @@ from pandas import DataFrame
 from pandas.plotting import register_matplotlib_converters
 import matplotlib.pyplot as plt
 import talib
+import math
 
 
 def get_k_line_date(k_line):
@@ -92,19 +93,22 @@ class KLineAnalyzer:
         peroid = 20
         if indx <= peroid:
             return False
-        # cur_diff = k_line_list[indx].diff
-        # ma_close = self.get_ma_close(indx, k_line_list, 200)
-        cur_k_line = k_line_list[indx]
-        pre_k_line = k_line_list[indx - 1]
-        if self.is_cross(indx, k_line_list) \
-                and k_line_list[indx].diff <= -1.2:
 
+        cur_k_line = k_line_list[indx]
+        # iscross [1309] WinRate: 0.48420628025319595 Growth: 1.0023014378958321 days: 1.9160729800173761
+        # iscross [2233] WinRate: 0.49887934254762795 Growth: 1.0028457910089976 days: 1.7041230855435188
+
+        # iscross diff > -0.5 [2233] WinRate: 0.49759080278396123 Growth: 1.002804053887163 days: 1.7157147285074248
+
+        # iscross diff <= -0.5 [2226] WinRate: 0.5051742919389978 Growth: 1.0030571983704808 days: 1.6480119825708062
+        #  iscross diff`>= 0.5 [2233] WinRate: 0.5661740558292282 Growth: 1.0039080157453588 days: 1.7566502463054188
+        if self.is_cross(indx, k_line_list) and cur_k_line.diff >= 0.5:
             return True
         else:
             return False
 
     def is_sell_match(self, indx, k_line_list):
-        return self.is_sell_cross(indx, k_line_list)
+        return self.is_sell_cross(indx, k_line_list) and False
 
     def get_macd(self, df_close_data, fastperiod=12, slowperiod=26):
         diff, dea, bar = talib.MACD(
@@ -160,11 +164,17 @@ class KLineAnalyzer:
 
         df_close = DataFrame({'close': close_arr})
         diff, dea, bar = self.get_macd(df_close['close'])
+        bar_sum = 0
 
         for cur_idx in range(0, len(k_line_list)):
             k_line_list[cur_idx].diff = diff[cur_idx]
             k_line_list[cur_idx].dea = dea[cur_idx]
             k_line_list[cur_idx].bar = bar[cur_idx]
+
+            if not math.isnan(bar[cur_idx]):
+                bar_sum += 1 * k_line_list[cur_idx].bar
+
+            k_line_list[cur_idx].bar_sum = bar_sum
 
     def analyze_profit(self, code_id, table_id=0):
         k_line_list = KLineTable.select_k_line_list(code_id, table_id)
@@ -178,14 +188,14 @@ class KLineAnalyzer:
         prev_k_line = None
         is_during_check = False
         start_check_k_line = None
-        win_exp_rate = 10 / 100
-        lose_exp_rate = -10 / 100
+        win_exp_rate = 2 / 100
+        lose_exp_rate = -1 / 100
 
         if len(k_line_list) == 0:
             return buy_recd_list
 
         self.add_macd_to_k_line_list(k_line_list)
-        self.add_macd_to_k_line_list(uper_k_line_list)
+        # self.add_macd_to_k_line_list(uper_k_line_list)
 
         for cur_idx in range(0, len(k_line_list)):
             k_line = k_line_list[cur_idx]
