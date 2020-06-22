@@ -130,6 +130,7 @@ dmypy.json
 
 #data base
 *.db
+stock.db-journal
 
 #recd files
 recd
