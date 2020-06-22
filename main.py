@@ -169,7 +169,7 @@ def get_buy_recd_list_sort_key(buy_recd_list):
             if buy_recd.sell_price > buy_recd.buy_price:
                 win_cnt += 1
     if total_cnt != 0:
-        return win_cnt / total_cnt
+        return round(win_cnt / total_cnt * 100, 2)
     else:
         return 0.5
 
@@ -182,17 +182,20 @@ def get_adv():
         code_id = recd.code_id
         recd_list = analyzer.analyze_profit(code_id, 0, False)
         buy_recd_lists_group.append(recd_list)
-    buy_recd_lists_group.sort(key=get_buy_recd_list_sort_key, reverse=True )
-
+    buy_recd_lists_group.sort(key=get_buy_recd_list_sort_key, reverse=True)
+    str_file_name = 'recd' + datetime.now().strftime("%Y-%m-%d") + '.html'
+    f = open('./recd/' + str_file_name, 'w')
+    f.write('<html>\n<head>\n</head>\n<body>\n')
     for buy_recd_list in buy_recd_lists_group:
         code_id = ''
         win_rate = get_buy_recd_list_sort_key(buy_recd_list)
-        total_cnt = len(buy_recd_list)-1
-        if len(buy_recd_list) <=0:
+        total_cnt = len(buy_recd_list) - 1
+        if len(buy_recd_list) <= 0:
             continue
         else:
             code_id = buy_recd_list[0].code_id
-        print('code: '+code_id+", win: "+str(win_rate)+", total cnt: "+str(total_cnt))
+        f.write('code: ' + code_id + ", win: " + str(win_rate) + "%, total cnt: " + str(total_cnt) + "<br>\n")
+    f.write('\n</body>')
 
 
 def daily_run():

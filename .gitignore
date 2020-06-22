@@ -130,3 +130,6 @@ dmypy.json
 
 #data base
 *.db
+
+#recd files
+recd
