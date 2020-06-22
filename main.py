@@ -183,7 +183,7 @@ def get_adv():
         recd_list = analyzer.analyze_profit(code_id, 0, False)
         buy_recd_lists_group.append(recd_list)
     buy_recd_lists_group.sort(key=get_buy_recd_list_sort_key, reverse=True)
-    str_file_name = 'recd' + datetime.now().strftime("%Y-%m-%d") + '.html'
+    str_file_name = 'recd' + datetime.now().strftime("%Y-%m-%d")
     f = open('./recd/' + str_file_name, 'w')
     f.write('<html>\n<head>\n</head>\n<body>\n')
     for buy_recd_list in buy_recd_lists_group:
