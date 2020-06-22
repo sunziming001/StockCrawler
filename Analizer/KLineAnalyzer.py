@@ -176,7 +176,7 @@ class KLineAnalyzer:
 
             k_line_list[cur_idx].bar_sum = bar_sum
 
-    def analyze_profit(self, code_id, table_id=0):
+    def analyze_profit(self, code_id, table_id=0, display_log=True):
         k_line_list = KLineTable.select_k_line_list(code_id, table_id)
         k_line_list.sort(key=get_k_line_date)
 
@@ -199,10 +199,6 @@ class KLineAnalyzer:
 
         for cur_idx in range(0, len(k_line_list)):
             k_line = k_line_list[cur_idx]
-
-            # 002458 2018-02-28~2018-03-01: -0.1 day: 1
-            if k_line.codeId == '2458' and k_line.year == 2018 and k_line.month == 2 and k_line.day == 28:
-                print("11")
 
             if prev_k_line is None:
                 is_during_check = False
@@ -242,8 +238,9 @@ class KLineAnalyzer:
                         cur_buy_recd.days = (k_line.get_date() - start_check_k_line.get_date()).days
 
                         buy_recd_list.append(cur_buy_recd)
-                        print(code_id + " " + start_check_k_line.get_date_str() + "~" + k_line.get_date_str() + ": "
-                              + str(output_rate) + " day: " + str(cur_buy_recd.days))
+                        if display_log:
+                            print(code_id + " " + start_check_k_line.get_date_str() + "~" + k_line.get_date_str() + ": "
+                                  + str(output_rate) + " day: " + str(cur_buy_recd.days))
                 else:
                     is_during_check = False
 
@@ -261,9 +258,7 @@ class KLineAnalyzer:
             cur_buy_recd.code_id = k_line.codeId
             cur_buy_recd.buy_date = start_check_k_line.get_date_str()
             cur_buy_recd.buy_price = start_check_k_line.open
-            cur_buy_recd.days = 0
-            cur_buy_recd.sell_date = 'None'
-            cur_buy_recd.sell_price = 0.0
+            cur_buy_recd.set_is_holding()
             buy_recd_list.append(cur_buy_recd)
 
         return buy_recd_list

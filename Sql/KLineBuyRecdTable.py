@@ -9,6 +9,14 @@ class KLineBuyRecd:
     sell_date = ' '
     days = 0
 
+    def is_holding(self):
+        return self.sell_date == 'None'
+
+    def set_is_holding(self):
+        self.sell_date = 'None'
+        self.sell_price = 0.0
+        self.days = 0
+
 
 class KLineBuyRecdTable:
 
@@ -58,7 +66,7 @@ class KLineBuyRecdTable:
     @staticmethod
     def gen_holding_select_sql_by_code_id(code_id):
         str_sql = ('select codeId,buyDate,sellDate,buyPrice,sellPrice,takeDays from KLineBuyRecdTable '
-                   'where codeId = \''+code_id+'\'')
+                   'where codeId = \'' + code_id + '\'')
 
         return str_sql
 
@@ -86,7 +94,8 @@ class KLineBuyRecdTable:
         future_date = '2050-01-01'
         str_sql = ('select codeId,buyDate,sellDate,buyPrice,sellPrice,takeDays from KLineBuyRecdTable '
                    'where buyDate between \'' + start_date + '\' and \'' + date.strftime("%Y-%m-%d") + '\' and ' +
-                   'sellDate between \'' + date.strftime("%Y-%m-%d") + '\' and \'' + future_date + '\' and sellDate is not \'None\'; ')
+                   'sellDate between \'' + date.strftime(
+                    "%Y-%m-%d") + '\' and \'' + future_date + '\' and sellDate is not \'None\'; ')
 
         return str_sql
 

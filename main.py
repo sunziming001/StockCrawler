@@ -64,7 +64,6 @@ def init_month_k_line():
     print('\ninit finished')
 
 
-
 def print_top_net_present_value_stock(top_cnt, season):
     StockAnalyzer.get_top_net_present_value_stock(top_cnt, season)
 
@@ -155,19 +154,45 @@ def get_buy_recd_win_rate(buy_recd_list):
         for buy_recd in buy_recd_list:
             if buy_recd.sell_price > buy_recd.buy_price:
                 win_cnt += 1
-    return win_cnt/total_cnt
+    return win_cnt / total_cnt
+
+
+def get_buy_recd_list_sort_key(buy_recd_list):
+    win_cnt = 0
+    total_cnt = 0
+
+    for buy_recd in buy_recd_list:
+        if buy_recd.is_holding():
+            continue
+        else:
+            total_cnt += 1
+            if buy_recd.sell_price > buy_recd.buy_price:
+                win_cnt += 1
+    if total_cnt != 0:
+        return win_cnt / total_cnt
+    else:
+        return 0.5
 
 
 def get_adv():
     recd_list = KLineBuyRecdTable.select_holding_code()
     analyzer = KLineAnalyzer()
-    buy_recds = []
+    buy_recd_lists_group = []
     for recd in recd_list:
         code_id = recd.code_id
+        recd_list = analyzer.analyze_profit(code_id, 0, False)
+        buy_recd_lists_group.append(recd_list)
+    buy_recd_lists_group.sort(key=get_buy_recd_list_sort_key, reverse=True )
 
-        analyzer.analyze_profit(code_id)
-
-
+    for buy_recd_list in buy_recd_lists_group:
+        code_id = ''
+        win_rate = get_buy_recd_list_sort_key(buy_recd_list)
+        total_cnt = len(buy_recd_list)-1
+        if len(buy_recd_list) <=0:
+            continue
+        else:
+            code_id = buy_recd_list[0].code_id
+        print('code: '+code_id+", win: "+str(win_rate)+", total cnt: "+str(total_cnt))
 
 
 def daily_run():
