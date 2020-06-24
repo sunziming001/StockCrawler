@@ -44,7 +44,7 @@ def init_database():
 
     print('\nusing spiders to get stock profit table...')
     ProfitRecdTable.clear_profit_recd_table()
-    os.system("scrapy runspider Spiders/StockSpiders/StockProfitSpider.py")
+    os.system("scrapy runspider Spiders/StockSpiders/StockProfitSpider.py --nolog")
 
     print('\ninit finished')
 
