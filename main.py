@@ -2,6 +2,7 @@
 import os
 import getopt
 import sys
+import platform
 from datetime import datetime
 from datetime import timedelta
 
@@ -15,7 +16,12 @@ from Analizer.StockAnalyzer import StockAnalyzer
 from Analizer.KLineAnalyzer import KLineAnalyzer
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-os.environ['PYTHONPATH'] = os.environ['PATH'] + BASE_DIR + ";"
+
+
+if platform.system() == 'Windows':
+    os.environ['PYTHONPATH'] = os.environ['PATH'] + BASE_DIR + ";"
+else:
+    os.environ['PYTHONPATH'] = os.environ['PATH'] + ":" + BASE_DIR
 
 
 def help_print():
