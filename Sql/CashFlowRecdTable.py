@@ -1,4 +1,4 @@
-from Sql.Connect import stockConnect
+from Sql.Connect import get_sql_conn
 
 
 class CashFlowRecd:
@@ -13,7 +13,7 @@ class CashFlowRecdTable:
 
     @staticmethod
     def clear_cash_flow_recd_table():
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         sql = 'delete from CashFlowRecd'
         conn.execute(sql)
         conn.commit()
@@ -26,7 +26,7 @@ class CashFlowRecdTable:
     @staticmethod
     def select_records(cash_flow_recd):
         cash_flow_recd_list = []
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         str_sql = CashFlowRecdTable.gen_select_sql(cash_flow_recd)
         cursor = conn.execute(str_sql)
         for row in cursor:
@@ -71,7 +71,7 @@ class CashFlowRecdTable:
 
     @staticmethod
     def insert_cash_flow_recd_list(cash_flow_recd_list):
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         list_len = len(cash_flow_recd_list)
         for i in range(0, list_len):
             sql = CashFlowRecdTable.gen_insert_sql(cash_flow_recd_list[i])

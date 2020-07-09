@@ -1,4 +1,4 @@
-from Sql.Connect import stockConnect
+from Sql.Connect import get_sql_conn
 
 
 class NetPresentValue:
@@ -15,7 +15,7 @@ class NetPresentValueTable:
 
     @staticmethod
     def select_net_present_value(stock_id, season):
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         ret_list = []
 
         str_sql = NetPresentValueTable.gen_net_present_value_sql(stock_id, season)

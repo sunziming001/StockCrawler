@@ -1,4 +1,4 @@
-from Sql.Connect import stockConnect
+from Sql.Connect import get_sql_conn
 from datetime import datetime
 
 
@@ -38,7 +38,7 @@ class KLineTable:
 
     @staticmethod
     def clear_k_line_table(table_id):
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         sql = ('delete from ' + KLineTable.get_table_name(table_id))
         conn.execute(sql)
         conn.commit()
@@ -46,7 +46,7 @@ class KLineTable:
     @staticmethod
     def select_k_line_list(code_id, table_id, start_date=datetime(1800, 1, 1), end_date=datetime.now()):
         k_line_list = []
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         sql = KLineTable.gen_select_sql(code_id, table_id, start_date, end_date)
         cursor = conn.execute(sql)
         for row in cursor:
@@ -71,14 +71,14 @@ class KLineTable:
         sql = ('select codeId, year, month, day, open, close, high, low, takeover, cost ,price from '
                + KLineTable.get_table_name(table_id)
                + ' where '
-               + "codeId = " + code_id
+               + "codeId = " + '\''+ code_id + '\''
                + " order by id;")
 
         return sql
 
     @staticmethod
     def insert_k_line_list(k_line_list, table_id):
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         list_len = len(k_line_list)
         for i in range(0, list_len):
             k_line_item = k_line_list[i]
@@ -91,7 +91,7 @@ class KLineTable:
         sql = ('insert into '
                + KLineTable.get_table_name(table_id)
                + ' (codeId, year, month, day, open, close, high, low, takeover,cost,price)values('
-               + k_line_item.codeId + ", "
+               + '\''+ k_line_item.codeId + '\''+ ", "
                + str(k_line_item.year) + ", "
                + str(k_line_item.month) + ", "
                + str(k_line_item.day) + ", "

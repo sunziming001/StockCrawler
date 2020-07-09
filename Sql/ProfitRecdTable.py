@@ -1,4 +1,4 @@
-from Sql.Connect import stockConnect
+from Sql.Connect import get_sql_conn
 from datetime import datetime
 from datetime import timedelta
 
@@ -14,7 +14,7 @@ class ProfitRecd:
 class ProfitRecdTable:
     @staticmethod
     def clear_profit_recd_table():
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         sql = 'delete from ProfitRecd'
         conn.execute(sql)
         conn.commit()
@@ -22,7 +22,7 @@ class ProfitRecdTable:
     @staticmethod
     def select_records(profit_recd):
         profit_recd_list = []
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         str_sql = ProfitRecdTable.gen_select_sql(profit_recd)
         cursor = conn.execute(str_sql)
         for row in cursor:
@@ -39,7 +39,7 @@ class ProfitRecdTable:
     @staticmethod
     def select_stock_recd(code_id):
         profit_recd_list = []
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         str_sql = ProfitRecdTable.gen_select_stock_is_profitable(code_id)
         cursor = conn.execute(str_sql)
         for row in cursor:
@@ -102,7 +102,7 @@ class ProfitRecdTable:
 
     @staticmethod
     def insert_profit_recd_list(profit_recd_list):
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         list_len = len(profit_recd_list)
         for i in range(0, list_len):
             sql = ProfitRecdTable.gen_insert_sql(profit_recd_list[i])

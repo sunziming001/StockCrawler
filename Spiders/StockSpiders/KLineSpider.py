@@ -6,12 +6,31 @@ import json
 from datetime import datetime
 from Sql.StockBriefTable import StockBriefTable
 from Sql.KLineTable import KLine, KLineTable
+from Sql.Connect import switch_zh_database, switch_amex_database, switch_nyse_database, switch_nysdaq_database
 
 
 class KLineSpider(scrapy.Spider):
     name = 'KLineSpider'
     cur_scode_indx = 0
-    scode_list = StockBriefTable.get_stock_id_list()
+    scode_list = None
+    str_market_id = '0'
+
+    def __init__(self, market_id='0', *args, **kwargs):
+        super(KLineSpider, self).__init__(*args, **kwargs)
+        self.str_market_id = market_id
+        if market_id == '0':
+            switch_zh_database()
+        elif market_id == '105':
+            switch_nysdaq_database()
+        elif market_id == '106':
+            switch_nyse_database()
+        elif market_id == '107':
+            switch_amex_database()
+
+        self.scode_list = StockBriefTable.get_stock_id_list()
+
+    def get_str_market_id(self):
+        return self.str_market_id
 
     @abstractmethod
     def get_k_line_table_id(self):
@@ -25,7 +44,7 @@ class KLineSpider(scrapy.Spider):
     def format_url(self, scode):
         url = ('http://64.push2his.eastmoney.com/api/qt/stock/kline/get?'
                + 'cb=jQuery112401339825495898772_1591876244340&'
-               + 'secid=0.' + scode + '&'
+               + 'secid='+self.get_str_market_id()+'.' + scode + '&'
                + 'ut=7eea3edcaed734bea9cbfc24409ed989&'
                + 'fields1=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6&'
                + 'fields2=f51%2Cf52%2Cf53%2Cf54%2Cf55%2Cf56%2Cf57%2Cf58%2Cf61&'
@@ -106,9 +125,11 @@ class KLineSpider(scrapy.Spider):
                 k_line_item.high = arr[3]
                 k_line_item.low = arr[4]
                 k_line_item.takeover = arr[8]
-                k_line_item.price = (float(k_line_item.open) + float(k_line_item.close) + float(k_line_item.high) + float(k_line_item.low)) / 4.0
+                k_line_item.price = (float(k_line_item.open) + float(k_line_item.close) + float(
+                    k_line_item.high) + float(k_line_item.low)) / 4.0
 
-                last_cost_info = self.get_new_cost_info(last_cost_info, float(k_line_item.price), float(k_line_item.takeover))
+                last_cost_info = self.get_new_cost_info(last_cost_info, float(k_line_item.price),
+                                                        float(k_line_item.takeover))
                 k_line_item.cost = self.get_cost_from_cost_info(last_cost_info)
 
                 k_line_list.append(k_line_item)

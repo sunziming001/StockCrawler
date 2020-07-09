@@ -1,4 +1,4 @@
-from Sql.Connect import stockConnect
+from Sql.Connect import get_sql_conn
 
 
 class KLineBuyRecd:
@@ -22,7 +22,7 @@ class KLineBuyRecdTable:
 
     @staticmethod
     def clear_table():
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         sql = 'delete from KLineBuyRecdTable;'
         conn.execute(sql)
         conn.commit()
@@ -30,7 +30,7 @@ class KLineBuyRecdTable:
     @staticmethod
     def select_holding_code():
         recd_list = []
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         str_sql = 'select codeId,buyDate,sellDate,buyPrice,sellPrice,takeDays from KLineBuyRecdTable where sellDate ' \
                   'is \'None\' '
         cursor = conn.execute(str_sql)
@@ -47,7 +47,7 @@ class KLineBuyRecdTable:
 
     @staticmethod
     def select_holding_buy_recd_list_by_code_id(code_id):
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         ret_list = []
 
         str_sql = KLineBuyRecdTable.gen_holding_select_sql_by_code_id(code_id)
@@ -72,7 +72,7 @@ class KLineBuyRecdTable:
 
     @staticmethod
     def select_holding_buy_recd_list_by_date(date):
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         ret_list = []
 
         str_sql = KLineBuyRecdTable.gen_holding_select_sql_by_date(date)
@@ -101,7 +101,7 @@ class KLineBuyRecdTable:
 
     @staticmethod
     def insert_buy_recd_list(buy_recd_list):
-        conn = stockConnect.get_connect()
+        conn = get_sql_conn()
         list_len = len(buy_recd_list)
         for i in range(0, list_len):
             sql = KLineBuyRecdTable.gen_insert_sql(buy_recd_list[i])

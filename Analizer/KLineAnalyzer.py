@@ -89,19 +89,13 @@ class KLineAnalyzer:
                 return k_line.takeover > 180
         return False
 
-    def is_match(self, indx, k_line_list, upper_k_line_list):
+    def is_match(self, indx, k_line_list):
         peroid = 20
         if indx <= peroid:
             return False
 
         cur_k_line = k_line_list[indx]
-        # iscross [1309] WinRate: 0.48420628025319595 Growth: 1.0023014378958321 days: 1.9160729800173761
-        # iscross [2233] WinRate: 0.49887934254762795 Growth: 1.0028457910089976 days: 1.7041230855435188
 
-        # iscross diff > -0.5 [2233] WinRate: 0.49759080278396123 Growth: 1.002804053887163 days: 1.7157147285074248
-
-        # iscross diff <= -0.5 [2226] WinRate: 0.5051742919389978 Growth: 1.0030571983704808 days: 1.6480119825708062
-        #  iscross diff`>= 0.5 [2233] WinRate: 0.5661740558292282 Growth: 1.0039080157453588 days: 1.7566502463054188
         if self.is_cross(indx, k_line_list) and cur_k_line.diff >= 0.5:
             return True
         else:
@@ -180,9 +174,6 @@ class KLineAnalyzer:
         k_line_list = KLineTable.select_k_line_list(code_id, table_id)
         k_line_list.sort(key=get_k_line_date)
 
-        uper_k_line_list = KLineTable.select_k_line_list(code_id, table_id + 2)
-        uper_k_line_list.sort(key=get_k_line_date)
-
         buy_recd_list = []
         growth = 0
         prev_k_line = None
@@ -195,7 +186,6 @@ class KLineAnalyzer:
             return buy_recd_list
 
         self.add_macd_to_k_line_list(k_line_list)
-        # self.add_macd_to_k_line_list(uper_k_line_list)
 
         for cur_idx in range(0, len(k_line_list)):
             k_line = k_line_list[cur_idx]
@@ -244,7 +234,7 @@ class KLineAnalyzer:
                 else:
                     is_during_check = False
 
-            elif self.is_match(cur_idx, k_line_list, uper_k_line_list):
+            elif self.is_match(cur_idx, k_line_list):
                 is_during_check = True
                 total_raise_rate = 0.0
                 total_des_rate = 0.0
