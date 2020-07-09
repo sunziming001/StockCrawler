@@ -12,6 +12,7 @@ class BrowseRecdIndex:
                 continue
             else:
                 file_name_list.append(listname)
+        file_name_list.sort(reverse=True)
         return file_name_list
 
     def gen_href_text(self, file_name,dir_name):
