@@ -190,8 +190,10 @@ def analyzer_day_cost_profit():
     for index in range(0, code_cnt):
         code_id = scode_list[index]
         buy_record_list = analyzer.analyze_profit(code_id, 0)
+        has_holding = False
         for buy_record in buy_record_list:
             if buy_record.sell_date == 'None':
+                has_holding = True
                 continue
             rate = (buy_record.sell_price - buy_record.buy_price) / buy_record.buy_price
             growth = growth * (1 + rate)
@@ -199,8 +201,8 @@ def analyzer_day_cost_profit():
             take_days += buy_record.days
             if rate > 0.0:
                 win_cnt += 1
-
-        KLineBuyRecdTable.insert_buy_recd_list(buy_record_list)
+        if has_holding:
+            KLineBuyRecdTable.insert_buy_recd_list(buy_record_list)
         if len(buy_record_list) > 0 and total_cnt > 0:
             print("[" + str(index) + "] WinRate: " + str(win_cnt * 1.0 / total_cnt) + " Growth: " + str(
                 pow(growth, 1 / take_days)) + " days: " + str(take_days / total_cnt))
