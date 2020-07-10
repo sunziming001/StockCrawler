@@ -134,3 +134,4 @@ stock.db-journal
 
 #recd files
 recd
+data/*.csv
