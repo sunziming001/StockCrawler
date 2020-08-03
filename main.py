@@ -101,6 +101,11 @@ def init_us_day_k_line():
     print('\ninit finished')
 
 
+def get_rzrq():
+    switch_zh_database()
+    os.system("scrapy runspider Spiders/StockSpiders/RzRqSpider.py --nolog")
+
+
 def init_week_k_line():
     print('start init week k line...')
     KLineTable.clear_k_line_table(1)
@@ -282,6 +287,7 @@ def daily_run():
     init_day_k_line()
     analyzer_day_cost_profit()
     get_adv()
+    get_rzrq()
 
 
 def reg_test():
@@ -311,6 +317,7 @@ if __name__ == "__main__":
                                                    'getusadv',
                                                    'dailyrun',
                                                    'usdailyrun',
+                                                   'rzrq',
                                                    'regtest'])
     season = 4
     for key, value in opts:
@@ -357,3 +364,5 @@ if __name__ == "__main__":
             reg_test()
         elif key in ['--initusdl']:
             init_us_day_k_line()
+        elif key in ["--rzrq"]:
+            get_rzrq()

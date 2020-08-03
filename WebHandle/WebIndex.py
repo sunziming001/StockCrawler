@@ -12,6 +12,7 @@ class WebIndex:
         body += self.gen_href_text("NYSDAQ", "nysdaq_recd") + '<br>'
         body += self.gen_href_text("NYSE", "nyse_recd") + '<br>'
         body += self.gen_href_text("AMEX", "amex_recd") + '<br>'
+        body += self.gen_href_text("RZRQ", "rzrq") + '<br>'
 
         body +='</body></html>'
         return body
